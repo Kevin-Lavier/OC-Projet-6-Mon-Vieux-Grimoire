@@ -1,7 +1,9 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const userRoutes = require("./routes/user");
-const password = require("./password");
+const booksRoutes = require("./routes/books");
+const path = require("path");
+const password = require("./utils/password");
 
 mongoose
   .connect(
@@ -26,6 +28,9 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use("/images", express.static(path.join(__dirname, "images")));
+
 app.use("/api/auth", userRoutes);
+app.use("/api/books", booksRoutes);
 
 module.exports = app;
