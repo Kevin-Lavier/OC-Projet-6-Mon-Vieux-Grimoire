@@ -17,11 +17,24 @@ const storage = multer.diskStorage({
   filename: (req, file, callback) => {
     const name = file.originalname.replace(/[\s.]+/g, "_");
     const extension = MIME_TYPES[file.mimetype];
+
+    if (!extension) {
+      return callback(new Error("Format de fichier non supporté"), false);
+    }
+
     callback(null, name + Date.now() + "." + extension);
   },
 });
 
-module.exports = multer({ storage: storage }).single("image");
+module.exports = multer({
+  storage: storage,
+  fileFilter: (req, file, callback) => {
+    if (!MIME_TYPES[file.mimetype]) {
+      return callback(new Error("Format de fichier non supporté"), false);
+    }
+    callback(null, true);
+  },
+}).single("image");
 
 module.exports.resizeImage = (req, res, next) => {
   if (!req.file) {
@@ -30,6 +43,7 @@ module.exports.resizeImage = (req, res, next) => {
 
   const filePath = req.file.path;
   const fileName = req.file.filename;
+
   const avifFileName = fileName.replace(/\.\w+$/, ".avif");
   const outputFilePath = path.join("images", `resized_${avifFileName}`);
 
