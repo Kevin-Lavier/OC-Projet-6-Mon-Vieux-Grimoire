@@ -30,13 +30,16 @@ module.exports.resizeImage = (req, res, next) => {
 
   const filePath = req.file.path;
   const fileName = req.file.filename;
-  const outputFilePath = path.join("images", `resized_${fileName}`);
+  const avifFileName = fileName.replace(/\.\w+$/, ".avif");
+  const outputFilePath = path.join("images", `resized_${avifFileName}`);
 
   sharp(filePath)
     .resize({ width: 206, height: 260 })
+    .toFormat("avif")
     .toFile(outputFilePath)
     .then(() => {
       fs.unlink(filePath, () => {
+        req.file.filename = avifFileName;
         req.file.path = outputFilePath;
         next();
       });
